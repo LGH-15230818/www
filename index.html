@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小鹏汇天「陆地航母」全方位安全分析 | 飞行汽车技术基础 · 作业二</title>
+<meta name="description" content="针对小鹏汇天分体式飞行汽车「陆地航母」的系统安全工程深度分析：危险源辨识、FMEA、冗余可靠性、功能安全与 SOTIF、适航框架、风险矩阵、场景安全、应急与安全案例。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23132430'/%3E%3Cg stroke='%23e8f1f5' stroke-width='1.8' stroke-linecap='round'%3E%3Cline x1='16' y1='16' x2='6' y2='8'/%3E%3Cline x1='16' y1='16' x2='26' y2='8'/%3E%3Cline x1='16' y1='16' x2='6' y2='24'/%3E%3Cline x1='16' y1='16' x2='26' y2='24'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%23c97a35'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#f4f6f8; --card:#ffffff; --ink:#16242f; --ink-soft:#3d4f5c; --muted:#6c7a86;
+  --line:#dbe2e8; --line-soft:#e8edf1; --accent:#1f6f8b; --accent-deep:#154a5e;
+  --ochre:#c97a35; --dark:#132430; --ok:#2e8b6f; --warn:#c97a35; --bad:#b5483a;
+  --r1:#f9e7e4; --r2:#fbeee2; --r3:#fdf6e3; --r4:#e3f2ec;
+  --radius:10px; --shadow:0 1px 3px rgba(19,36,48,.08),0 6px 18px rgba(19,36,48,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);line-height:1.75;font-size:15.5px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+sup a{color:var(--accent);font-weight:500}
+
+.topnav{position:sticky;top:0;z-index:50;background:var(--dark);border-bottom:1px solid rgba(255,255,255,.08)}
+.topnav .wrap{display:flex;align-items:center;gap:20px;height:54px}
+.brand{color:#eef4f7;font-weight:700;font-size:14.5px;letter-spacing:.02em;white-space:nowrap}
+.brand span{color:var(--ochre)}
+.navlinks{display:flex;gap:16px;overflow-x:auto;scrollbar-width:none}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{color:#b9c8d1;font-size:13px;white-space:nowrap}
+.navlinks a:hover{color:#fff;text-decoration:none}
+
+.hero{background:var(--dark);color:#eef4f7;padding:56px 0 0}
+.hero .kicker{font-size:13px;letter-spacing:.14em;color:var(--ochre);font-weight:500;margin-bottom:18px}
+.hero h1{font-weight:900;font-size:clamp(26px,4.2vw,40px);line-height:1.3;margin-bottom:14px}
+.hero .sub{font-size:clamp(14px,1.8vw,17px);color:#b9c8d1;max-width:780px;margin-bottom:22px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:#93a8b3;padding-bottom:26px}
+.hero .meta b{color:#dbe7ec;font-weight:500}
+.hero-fig{margin-top:8px}
+.hero-fig img{width:100%;height:clamp(240px,38vw,420px);object-fit:cover;display:block}
+.figcap{font-size:12.5px;color:#8fa3ae;padding:10px 0 18px}
+.figcap b{color:#c7d6dd;font-weight:500}
+
+.kpis{background:var(--card);border-bottom:1px solid var(--line)}
+.kpis .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft)}
+.kpi{padding:20px 18px;background:var(--card)}
+.kpi .num{font-size:24px;font-weight:700;color:var(--accent-deep);letter-spacing:-.01em}
+.kpi .num small{font-size:13px;font-weight:500;color:var(--muted)}
+.kpi .lab{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+.toc{padding:34px 0 10px}
+.toc h2{font-size:15px;color:var(--muted);font-weight:500;margin-bottom:14px}
+.toc ol{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px 22px;counter-reset:toc}
+.toc li{counter-increment:toc;font-size:14px}
+.toc li::before{content:counter(toc,decimal-leading-zero);color:var(--ochre);font-family:ui-monospace,Consolas,monospace;font-size:12px;margin-right:8px}
+.toc a{color:var(--ink-soft)}
+
+section.block{padding:44px 0;border-top:1px solid var(--line-soft)}
+.sec-head{margin-bottom:22px}
+.sec-head .no{font-family:ui-monospace,Consolas,monospace;color:var(--ochre);font-size:13px;letter-spacing:.08em}
+.sec-head h2{font-weight:700;font-size:clamp(21px,2.6vw,27px);margin:4px 0 6px}
+.sec-head .en{font-size:13.5px;color:var(--muted)}
+.lead{font-size:16px;color:var(--ink-soft);max-width:820px;margin-bottom:18px}
+p{margin-bottom:14px}
+p.note{font-size:13.5px;color:var(--muted)}
+
+.findings{list-style:none;display:grid;gap:14px;margin:18px 0}
+.findings li{display:grid;grid-template-columns:34px 1fr;gap:14px;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius);padding:16px 18px}
+.findings .idx{font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-weight:700}
+.findings b{color:var(--ink)}
+
+.evbox{background:#eef4f6;border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:18px 0}
+.evbox h4{font-size:13.5px;color:var(--accent-deep);margin-bottom:8px}
+.evbox p{font-size:14px;margin-bottom:8px}
+.evbox p:last-child{margin-bottom:0}
+
+.table-scroll{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:13.5px;min-width:760px}
+th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft)}
+th{background:#f0f4f6;color:var(--ink-soft);font-weight:500;font-size:12.5px}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:99px;white-space:nowrap}
+.tag.ok{background:#e3f2ec;color:var(--ok)}
+.tag.warn{background:#fbeee2;color:var(--warn)}
+.tag.bad{background:#f9e7e4;color:var(--bad)}
+.tag.info{background:#e6eef2;color:var(--accent-deep)}
+
+figure{margin:22px 0}
+figure img{width:100%;border-radius:var(--radius);display:block}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+/* 安全生命周期流程 */
+.flow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:20px 0}
+.flow .step{background:var(--card);border:1px solid var(--line-soft);border-top:3px solid var(--accent);border-radius:var(--radius);padding:14px 12px}
+.flow .step .n{font-family:ui-monospace,Consolas,monospace;color:var(--ochre);font-size:11.5px;letter-spacing:.08em}
+.flow .step h5{font-size:13px;margin:6px 0 4px}
+.flow .step p{font-size:12px;color:var(--ink-soft);margin:0}
+
+/* 风险矩阵 */
+.matrix{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:18px;margin:18px 0;overflow-x:auto}
+.matrix-grid{display:grid;grid-template-columns:120px repeat(5,1fr);gap:6px;min-width:640px}
+.matrix-grid .mh{font-size:12px;color:var(--muted);text-align:center;padding:6px 4px}
+.matrix-grid .rh{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;padding:6px 8px}
+.cell{border-radius:8px;padding:10px 8px;font-size:12px;line-height:1.5;min-height:74px}
+.cell b{display:block;font-size:11.5px;margin-bottom:2px}
+.c-r1{background:var(--r1)} .c-r2{background:var(--r2)} .c-r3{background:var(--r3)} .c-r4{background:var(--r4)}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius);padding:20px}
+.card h4{font-size:15px;margin-bottom:10px;color:var(--accent-deep)}
+.card ul{padding-left:18px;font-size:13.5px;color:var(--ink-soft)}
+.card li{margin-bottom:8px}
+
+.gates{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.gate{background:var(--card);border:1px solid var(--line-soft);border-top:3px solid var(--bad);border-radius:var(--radius);padding:18px}
+.gate .g-no{font-family:ui-monospace,Consolas,monospace;color:var(--ochre);font-size:12px;letter-spacing:.1em}
+.gate h4{font-size:14.5px;margin:6px 0 8px}
+.gate p{font-size:13px;color:var(--ink-soft);margin:0}
+
+.refs{font-size:13px;color:var(--ink-soft)}
+.ref-list{list-style:none;padding-left:0;display:grid;gap:10px}
+.ref-list li{display:grid;grid-template-columns:34px 1fr;gap:8px;line-height:1.6}
+.ref-list .rn{color:var(--ochre);font-family:ui-monospace,Consolas,monospace;font-size:12px}
+footer.foot{background:var(--dark);color:#9fb3bd;padding:34px 0 40px;margin-top:40px;font-size:13px}
+footer.foot .wrap{display:grid;gap:12px}
+footer.foot .disc{color:#7e949f;max-width:780px}
+
+@media (max-width:880px){
+  .kpis .wrap{grid-template-columns:repeat(2,1fr)}
+  .toc ol{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .flow{grid-template-columns:repeat(2,1fr)}
+  .gates{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  .toc ol{grid-template-columns:1fr}
+  .gates{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="wrap">
+    <div class="brand">汇天<span>·</span>陆地航母 安全分析</div>
+    <div class="navlinks">
+      <a href="#summary">摘要</a>
+      <a href="#method">边界与方法</a>
+      <a href="#lifecycle">安全流程</a>
+      <a href="#hazard">危险源</a>
+      <a href="#fmea">FMEA</a>
+      <a href="#redundancy">冗余可靠性</a>
+      <a href="#framework">安全框架</a>
+      <a href="#matrix">风险矩阵</a>
+      <a href="#scenario">场景安全</a>
+      <a href="#emergency">应急运行</a>
+      <a href="#human">人为因素</a>
+      <a href="#cyber">网络安全</a>
+      <a href="#safetycase">安全案例</a>
+      <a href="#gaps">证据缺口</a>
+      <a href="#refs">参考文献</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">飞行汽车技术基础 · 作业二 / System Safety Analysis for Flying Vehicle</div>
+    <h1>小鹏汇天「陆地航母」：全方位深度安全分析</h1>
+    <p class="sub">沿系统安全工程（System Safety Engineering）流程，对分体式飞行汽车的陆行平台、飞行平台、自动分合机构、车载补能链路与运行环境进行危险源辨识、故障模式分析、冗余与可靠性评估、功能安全 / SOTIF / 适航框架对照、风险分级与场景安全推演，并明确区分已披露设计、待验证证据与尚未成立的安全结论。</p>
+    <div class="meta">
+      <span>分析对象：<b>XPENG AEROHT / ARIDGE Land Aircraft Carrier（分体式飞行汽车）</b></span>
+      <span>作者：<b>李国豪 / 15230818</b></span>
+      <span>证据截止：<b>2026-11-26</b></span>
+      <span>版本：<b>1.0</b></span>
+    </div>
+  </div>
+  <figure class="hero-fig">
+    <img src="ces-booth.jpg" alt="2025 CES 展台上的陆地航母陆行体与飞行体">
+    <figcaption class="figcap"><b>图 0.</b> 2025 年 CES 现场展示的陆行体（前景）与飞行体（展台）。安全分析对象包含这两个模块及其分合、补能与运行界面。摄影来源：XPENG AEROHT 公开展会资料，本页仅用于案例研究。</figcaption>
+  </figure>
+</header>
+
+<div class="kpis">
+  <div class="wrap">
+    <div class="kpi"><div class="num">双余度 <small>设计目标</small></div><div class="lab">动力 / 飞控 / 供电 / 通信冗余（官方披露层面）</div></div>
+    <div class="kpi"><div class="num">12 <small>类危险源</small></div><div class="lab">本报告辨识的风险域数量</div></div>
+    <div class="kpi"><div class="num">TC/PC <small>审定中</small></div><div class="lab">适航安全证据链尚未闭环</div></div>
+    <div class="kpi"><div class="num">多数 <small>待验证</small></div><div class="lab">故障注入 / 重构包线 / 电池试验未公开</div></div>
+  </div>
+</div>
+
+<div class="wrap toc">
+  <h2>文章目录 / Contents</h2>
+  <ol>
+    <li><a href="#summary">执行摘要</a></li>
+    <li><a href="#method">分析对象、边界与方法</a></li>
+    <li><a href="#lifecycle">系统安全工程流程</a></li>
+    <li><a href="#hazard">危险源辨识 HAZID</a></li>
+    <li><a href="#fmea">故障模式与影响分析 FMEA</a></li>
+    <li><a href="#redundancy">冗余架构与可靠性</a></li>
+    <li><a href="#framework">功能安全 / SOTIF / 适航框架</a></li>
+    <li><a href="#matrix">风险评估矩阵</a></li>
+    <li><a href="#scenario">关键场景安全分析</a></li>
+    <li><a href="#emergency">应急与运行安全</a></li>
+    <li><a href="#human">人为因素与培训资质</a></li>
+    <li><a href="#cyber">网络与数据安全</a></li>
+    <li><a href="#safetycase">安全案例骨架</a></li>
+    <li><a href="#gaps">证据缺口与未决问题</a></li>
+    <li><a href="#roadmap">安全改进路线判据</a></li>
+    <li><a href="#refs">参考文献</a></li>
+  </ol>
+</div>
+
+<section class="block" id="summary">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">01</div><h2>执行摘要</h2><div class="en">Executive Summary</div></div>
+    <p class="lead">安全分析的对象不是"飞机看起来安不安全"，而是：在哪些失效与误用条件下会出现何种危险、现有设计与规程能否把风险降到可接受水平、这些结论有没有可追溯的试验与审定证据。本报告对陆地航母按系统安全工程流程逐层拆解，结论按证据强度分为三档。</p>
+    <ol class="findings">
+      <li><span class="idx">01</span><div><b>设计层面已公开全域冗余目标，但冗余有效性尚未见验证证据。</b>官方披露动力、飞控、供电、通信、操控等关键系统具备冗余备份，第一套失效后第二套衔接；但各冗余通道的独立性等级、故障注入试验、剩余控制包线与失效概率分配未公开，不能把"有冗余设计"等同于"已验证冗余有效"<sup><a href="#ref1">[1]</a></sup><sup><a href="#ref7">[7]</a></sup>。</div></li>
+      <li><span class="idx">02</span><div><b>分体构型引入了纯航空器没有的机构与车辆界面风险。</b>自动分合机构要在行驶振动、对接冲击与飞行承载三种状态下保证锁止可靠；飞行体被装进六轮地面车辆后，还需同时满足航空结构安全与汽车级环境耐久。机构寿命、振动试验、互锁逻辑与人员隔离的公开证据不足<sup><a href="#ref2">[2]</a></sup><sup><a href="#ref12">[12]</a></sup>。</div></li>
+      <li><span class="idx">03</span><div><b>能源安全是最高优先级待验证项。</b>双座载人 eVTOL 靠高功率电池持续输出，起飞爬升阶段功率需求最高；电池热失控、过充过放、低温衰减与充电故障的防护设计、热蔓延隔离与应急断电策略，公开材料未披露测试数据<sup><a href="#ref25">[25]</a></sup>。</div></li>
+      <li><span class="idx">04</span><div><b>适航与运行许可链条尚未闭环，商业载人安全责任主体不明确。</b>飞行体 TC、PC 申请已获 CAAC 受理，AC、OC 未见公开证据；在证件链条完成前，公开活动只能定位为受控演示与体验，不能据此推定已具备商业运行安全水平<sup><a href="#ref4">[4]</a></sup><sup><a href="#ref7">[7]</a></sup>。</div></li>
+      <li><span class="idx">05</span><div><b>SOTIF 风险与硬件故障同样需要控制。</b>环境感知不足、操作者对自动 / 手动模式边界的误解、低空气象与起降点判断失误，可能在无硬件故障时诱发危险；ISO 21448 要求把这些可预见误用与功能不足纳入场景化验证<sup><a href="#ref20">[20]</a></sup>。</div></li>
+      <li><span class="idx">06</span><div><b>本报告不做"安全 / 不安全"的二元判决。</b>现有公开证据支持其完成了受控起飞、悬停、机动与降落；跨故障重构、全天候包线、电池与机构寿命、运营安全体系等关键问题仍处于待验证状态，结论应以后续试验报告与适航文件为准。</div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" id="method">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">02</div><h2>分析对象、安全边界与方法</h2><div class="en">Scope, Boundary and Method</div></div>
+    <p>本次安全分析延续作业一的产品界定：陆行体（Mothership，三轴六轮 6×6 增程式电动车）与飞行体（Air Module，六旋翼双涵道双座 eVTOL）通过车载自动分合机构结合，陆行体同时承担运载、存放与车载补能角色。同厂全倾转混动机型 A868 不属于本分析对象，其规格与安全问题不并入本报告<sup><a href="#ref5">[5]</a></sup>。</p>
+    <div class="two-col">
+      <div class="card">
+        <h4>纳入分析的安全界面</h4>
+        <ul>
+          <li>飞行平台：旋翼 / 电机 / 涵道、飞控、供电、通信、操纵与结构</li>
+          <li>陆行平台：底盘、制动、动力、车载电池与道路行驶安全</li>
+          <li>分合机构：锁止、对接、互锁、电气与通信耦合</li>
+          <li>补能链路：车载充电、高压对接、电池热管理</li>
+          <li>运行界面：起降场地、人员隔离、气象、空域与监管身份</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>不纳入 / 证据不足的部分</h4>
+        <ul>
+          <li>未公开的飞控拓扑、软件保证等级与冗余表决细节</li>
+          <li>未披露的电池容量、能量密度、循环寿命与载荷-航程曲线</li>
+          <li>未公开的供应商安全要求、专利与维护方案</li>
+          <li>无法从公开材料复算的失效概率与风险数值</li>
+        </ul>
+      </div>
+    </div>
+    <figure>
+      <img src="city-reflect.jpg" alt="城市建筑旁的陆地航母陆行体与飞行体">
+      <figcaption><b>图 1.</b> 陆行体（右）与飞行体（左）静态展示。安全边界同时覆盖两个模块及其结合、补能与运行界面。来源：公开产品资料。</figcaption>
+    </figure>
+    <div class="evbox">
+      <h4>证据分级与判断口径 / Evidence Grading</h4>
+      <p><b>已演示</b>：有公开飞行、载人飞行、多机试飞或试产下线记录可支持；<b>待验证</b>：披露了设计目标或冗余架构，但缺少试验报告、审定数据或第三方核验；<b>未成立</b>：未见公开证据支持其已具备相应安全能力或许可。企业宣传口径不直接计入安全证据。</p>
+      <p>方法上依次采用：系统边界定义 → 危险源辨识（HAZID）→ 故障模式与影响分析（FMEA）→ 冗余与可靠性梳理 → 标准 / 适航框架对照 → 严重度-可能性风险分级 → 场景化推演 → 安全案例与残余风险说明。</p>
+    </div>
+  </div>
+</section>
+<section class="block" id="lifecycle">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">03</div><h2>系统安全工程流程</h2><div class="en">System Safety Lifecycle</div></div>
+    <p>系统安全工程不是开发末端追加的一次安全测试，而是从概念阶段贯穿到运行与退役的连续过程。下图把通用安全生命周期映射到本案例；每个环节都应留下可追溯的安全需求、分析记录与验证证据。</p>
+    <div class="flow">
+      <div class="step"><div class="n">STEP 1</div><h5>功能与危害定义</h5><p>界定陆 / 空模块功能、任务剖面与运行环境，划定安全边界</p></div>
+      <div class="step"><div class="n">STEP 2</div><h5>危险识别</h5><p>辨识失效、故障、误用与外部威胁对应的危险源</p></div>
+      <div class="step"><div class="n">STEP 3</div><h5>风险评估</h5><p>按严重度与可能性分级，确定不可接受 / ALARP / 可接受区间</p></div>
+      <div class="step"><div class="n">STEP 4</div><h5>安全需求</h5><p>把风险结论转成架构、冗余、程序与场地层面的安全需求</p></div>
+      <div class="step"><div class="n">STEP 5</div><h5>架构与冗余</h5><p>分配单点失效容忍、通道独立性与故障降级策略</p></div>
+      <div class="step"><div class="n">STEP 6</div><h5>验证与确认</h5><p>仿真、台架、故障注入、试飞与审定试验，复核安全需求闭环</p></div>
+      <div class="step"><div class="n">STEP 7</div><h5>运行与持续适航</h5><p>运行监控、事件报告、维护周转、变更管理与残余风险跟踪</p></div>
+    </div>
+    <p class="note">对照本案例：STEP 1–2 可由公开产品资料与场景描述重建；STEP 3–4 的风险数值与安全需求分配未见公开文件；STEP 5 有冗余设计披露；STEP 6 的试验与审定证据大部分未公开；STEP 7 取决于尚未取得的 AC / OC 与运营体系。</p>
+  </div>
+</section>
+
+<section class="block" id="hazard">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">04</div><h2>危险源辨识（HAZID）</h2><div class="en">Hazard Identification</div></div>
+    <p>危险源辨识覆盖推进、控制、能源、结构与机构、人员与地面、环境外部、人为差错与网络信息安全八个方向。下表只列危险与触发条件，严重度与可能性在第 08 节矩阵中分级。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:17%"><col style="width:31%"><col style="width:27%"><col style="width:13%"><col style="width:12%"></colgroup>
+        <thead><tr><th>风险域</th><th>危险源 / 触发条件</th><th>可能后果</th><th>涉及模块</th><th>证据状态</th></tr></thead>
+        <tbody>
+          <tr><td>动力与推进</td><td>单 / 多电机或旋翼失效、桨叶断裂脱落、涵道异物吸入、推力不对称</td><td>姿态偏移、失控、迫降或坠机</td><td>飞行体推进系统</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>飞行控制</td><td>主控失效、传感器冲突 / 漂移、通信丢失、非预期动作或模式切换</td><td>错误指令、姿态失控、误动作</td><td>飞控与感知系统</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>能源系统</td><td>电池单体失效、热失控、过充过放、低温衰减、充电故障、高压短路</td><td>断电、起火、爆炸、飞行中动力丧失</td><td>飞行体电池 / 车载补能</td><td><span class="tag bad">证据不足</span></td></tr>
+          <tr><td>结构与机构</td><td>折叠机臂展开锁定失效、分合机构锁止失效 / 对接错位 / 行驶中误释放、振动疲劳</td><td>结构失效、飞行体脱落、夹伤</td><td>机体结构 / 分合机构</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>陆行平台</td><td>车辆碰撞、制动失效、底盘 / 轮胎故障、车载电池与电气故障</td><td>地面交通事故、连带损伤飞行体</td><td>陆行体底盘与动力</td><td><span class="tag warn">待核验</span></td></tr>
+          <tr><td>人员与地面安全</td><td>地面人员侵入旋翼 / 涵道区、降落冲击、起降点杂物、观众隔离不足</td><td>地面人员伤害、物体打击</td><td>场地与运行程序</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>环境与外部</td><td>阵风、低能见度、降水、结冰、鸟击、起降场地不平、电磁干扰</td><td>偏离航线、迫降、结构损伤</td><td>飞行体 / 运行环境</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>人为差错</td><td>模式误解、误操纵、监控疏忽、培训不足、疲劳、应急处置错误</td><td>错误动作、处置不当放大事故</td><td>乘员 / 驾驶员 / 运营人</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>网络与数据</td><td>非授权接入、固件 / 软件篡改、通信劫持、运行数据泄露</td><td>失控风险、隐私与合规问题</td><td>车 / 飞控电子系统</td><td><span class="tag bad">未见证据</span></td></tr>
+          <tr><td>运行与监管</td><td>空域未批准、起降场地不合规、人员资质不符、跨境型号认可缺失</td><td>非法运行、事故责任不清</td><td>运营体系 / 监管身份</td><td><span class="tag bad">未成立</span></td></tr>
+          <tr><td>噪声与社区</td><td>起降脉冲噪声、频谱与频次暴露、夜间运行</td><td>社区抵触、社会许可受限</td><td>运行环境</td><td><span class="tag info">研究层面</span></td></tr>
+          <tr><td>维护与变更</td><td>机构 / 电池维护不当、维修误操作、软件版本变更未回归验证</td><td>隐患累积、重复故障</td><td>全寿命周期体系</td><td><span class="tag bad">未见证据</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="fmea">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">05</div><h2>故障模式与影响分析（FMEA）</h2><div class="en">Failure Modes and Effects Analysis</div></div>
+    <p>下表按子系统列出典型故障模式、局部与高层影响、已披露的补偿设计、验证证据状态与残余风险判断。表中"补偿设计"来自官方披露层面；公开材料未给出失效概率、检测率与风险优先数（RPN），因此本报告不编造量化分值，只做定性残余风险判断。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:13%"><col style="width:19%"><col style="width:19%"><col style="width:22%"><col style="width:15%"><col style="width:12%"></colgroup>
+        <thead><tr><th>子系统</th><th>故障模式</th><th>影响（局部 → 整车）</th><th>现有补偿设计（披露）</th><th>验证证据状态</th><th>残余风险判断</th></tr></thead>
+        <tbody>
+          <tr><td>旋翼 / 电机</td><td>单桨或单电机失效、推力不对称</td><td>单路推力损失 → 姿态偏移，需剩余推力重分配维持可控</td><td>六旋翼分布式布置，多电机冗余；披露关键系统冗余备份<sup><a href="#ref1">[1]</a></sup></td><td>故障注入试验、重构包线未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>桨叶 / 涵道</td><td>桨叶断裂脱落、涵道异物吸入</td><td>剧烈振动与推力损失 → 失控风险</td><td>碳纤维桨叶与涵道构型；单点失效安全目标</td><td>桨叶失效 / 异物撞击试验未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>飞控系统</td><td>主控失效、传感器冲突、表决错误</td><td>错误姿态指令 → 失控或非预期动作</td><td>披露飞控冗余、双模式操纵与融合感知辅助<sup><a href="#ref1">[1]</a></sup></td><td>冗余通道独立性等级、硬件在环与表决试验未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>供电 / 电池</td><td>单体失效、热失控、过充过放、高压短路</td><td>局部断电 / 起火 → 动力丧失、火灾</td><td>全域 800V 高压平台；披露供电冗余备份</td><td>电池安全测试、热蔓延防护、应急断电策略未公开</td><td><span class="tag bad">高优先级待验证</span></td></tr>
+          <tr><td>通信链路</td><td>链路丢失、通信中断、数据错误</td><td>指令 / 状态中断 → 无法监控或辅助失效</td><td>披露通信冗余备份</td><td>通信丢失处置流程与链路切换试验未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>分合机构</td><td>锁止失效、对接错位、行驶中误释放、夹伤</td><td>机构失效 → 飞行体脱落或人员伤害</td><td>机械锁止、电气对接与互锁；约 5 分钟自动收纳释放<sup><a href="#ref12">[12]</a></sup></td><td>机构寿命、振动 / 冲击试验、互锁逻辑验证未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>折叠结构</td><td>机臂展开锁定失效、收纳振动疲劳</td><td>飞行中结构失效 → 灾难性后果</td><td>碳纤维主体结构与可折叠机臂 / 桨叶</td><td>结构疲劳、环境耐久与锁定可靠性数据未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>陆行底盘</td><td>碰撞、制动失效、轮胎 / 转向故障</td><td>地面事故 → 连带损伤车载飞行体</td><td>三轴六轮 6×6、后轮转向；按道路车辆管理</td><td>车辆公告、碰撞与制动测试数据未见公开</td><td><span class="tag warn">待核验</span></td></tr>
+          <tr><td>操纵与人机界面</td><td>模式误解、误操纵、自动 / 手动切换失误</td><td>错误动作 → 事故放大</td><td>单杆操纵、一键起降、航线规划与视野辅助</td><td>人为因素试验、模式边界培训材料未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>外部环境</td><td>阵风、低能见度、鸟击、场地不平</td><td>偏离航线、迫降、结构损伤</td><td>多维环境融合感知与降落视野辅助</td><td>气象包线、抗风等级与备降策略未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>地面人员</td><td>侵入旋翼 / 涵道区、降落冲击、杂物卷入</td><td>地面人员伤害、物体打击</td><td>起降隔离区与人员互锁（流程层面）</td><td>场地隔离标准、消防与应急预案未见公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>网络信息</td><td>非授权接入、固件篡改、链路劫持</td><td>失控风险、数据泄露</td><td>未见公开网络安全架构</td><td>安全需求、渗透测试与加密方案缺失</td><td><span class="tag bad">未见证据</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">表 1. FMEA 为定性工程梳理，不替代正式 FMEA / FMECA 报告；正式报告应包含故障概率、探测度、补偿措施优先级与风险优先数，并由跨专业团队评审签字。</p>
+  </div>
+</section>
+
+<section class="block" id="redundancy">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">06</div><h2>冗余架构与可靠性分析</h2><div class="en">Redundancy and Reliability</div></div>
+    <p>分布式电推进（Distributed Electric Propulsion, DEP）与冗余架构是多旋翼 eVTOL 安全设计的核心。陆地航母飞行体采用六旋翼双涵道布置、多组电机分布式驱动；官方披露动力、飞控、供电、通信、操控等关键系统均有冗余备份，第一套系统失效后第二套衔接以保持安全飞行<sup><a href="#ref1">[1]</a></sup>。</p>
+    <figure>
+      <img src="air-studio.jpg" alt="飞行体静态展示：六副机臂旋翼与两侧涵道">
+      <figcaption><b>图 2.</b> 飞行体静态展示：可见六副机臂 / 旋翼与两侧涵道、双座座舱。分布式布置为单路失效后的推力重分配提供了物理基础。来源：官方视觉材料。</figcaption>
+    </figure>
+    <div class="two-col">
+      <div class="card">
+        <h4>冗余应回答的可靠性问题</h4>
+        <ul>
+          <li><b>通道独立性</b>：冗余通道是否共用传感器、电源、线束或软件共因失效点</li>
+          <li><b>表决与切换</b>：如何检测失效、如何表决、切换瞬态是否可控</li>
+          <li><b>剩余能力</b>：失效后剩余推力 / 功率能否支撑到安全着陆点</li>
+          <li><b>共因失效</b>：电池、高压总线、飞控软件等共享环节失效的防护</li>
+          <li><b>可靠性分配</b>：各系统失效概率目标与飞机级安全目标如何分解</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>本案例公开证据缺口</h4>
+        <ul>
+          <li>未披露冗余通道数量、独立性等级与故障检测机制</li>
+          <li>未公开故障注入试验结果与剩余控制包线</li>
+          <li>未给出电机 / 电池 / 飞控的可靠性指标与维修间隔</li>
+          <li>未说明单点失效后可支撑的飞行时间与备降条件</li>
+          <li>冗余设计目标 ≠ 已被验证的失效概率，两者不能混同<sup><a href="#ref25">[25]</a></sup></li>
+        </ul>
+      </div>
+    </div>
+    <p>从可靠性逻辑看，多旋翼构型在单桨 / 单电机失效时可通过剩余推力重分配力矩、维持可控姿态；真正的工程难点在于推力分配、模态管理、故障检测与冗余表决。若剩余通道与主通道存在共因（同一电池、同一软件、同一线束），单点失效可能同时击穿多套冗余，这是冗余分析必须优先排除的情形。</p>
+  </div>
+</section>
+<section class="block" id="framework">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">07</div><h2>功能安全、SOTIF 与适航安全框架</h2><div class="en">Functional Safety, SOTIF and Airworthiness Framework</div></div>
+    <p>陆地航母同时携带道路车辆功能与载人航空器功能，安全论证不能只套用汽车或航空其中一套逻辑。下表把常用标准与监管框架与本案例逐项对照；标准本身是方法框架，不等于"认证证书"。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:22%"><col style="width:26%"><col style="width:30%"><col style="width:22%"></colgroup>
+        <thead><tr><th>框架 / 标准</th><th>适用对象</th><th>核心安全要求</th><th>本案例对照状态</th></tr></thead>
+        <tbody>
+          <tr><td>ISO 26262 道路车辆功能安全</td><td>陆行体电气 / 电子系统</td><td>按 ASIL 等级分解危害、安全需求、硬件 / 软件容错与验证</td><td>陆行体按道路车辆管理；未见公开 ASIL 分级与安全档案<sup><a href="#ref20">[20]</a></sup></td></tr>
+          <tr><td>ISO 21448 SOTIF</td><td>无硬件故障下的功能不足与可预见误用</td><td>识别感知局限、模式误解与合理误用，用场景设计与验证证据降低风险</td><td>自动 / 手动双模式与辅助感知的 SOTIF 场景集未见公开<sup><a href="#ref20">[20]</a></sup></td></tr>
+          <tr><td>ISO 34502 场景化安全评价</td><td>自动化驾驶 / 辅助系统场景评价</td><td>建立场景库、测试用例与覆盖度评价方法</td><td>起降、备降、故障与低能见度场景库未公开</td></tr>
+          <tr><td>CCAR-21 适航审定体系</td><td>飞行体（航空器）</td><td>TC 型号合格 → PC 生产许可 → AC 标准适航 → OC 运营许可链条</td><td>TC、PC 申请已受理审定中；AC、OC 未见公开证据<sup><a href="#ref4">[4]</a></sup><sup><a href="#ref7">[7]</a></sup></td></tr>
+          <tr><td>AC-21-AA-2026-45 动力提升航空器咨询通告</td><td>新型动力提升航空器审定</td><td>为 eVTOL 等新型航空器制定专用技术与审定依据</td><td>审定依据框架已存在；产品符合性验证进度未见公开文件<sup><a href="#ref19">[19]</a></sup></td></tr>
+          <tr><td>机载系统研制保证（DAL / SAE ARP4754A / 4761 思路）</td><td>航空器系统与软件</td><td>按失效后果分配研制保证等级，开展 FTA / FMEA / 安全性评估</td><td>未见公开安全性评估报告与软件保证等级说明<sup><a href="#ref22">[22]</a></sup><sup><a href="#ref23">[23]</a></sup></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="evbox">
+      <h4>两套逻辑的叠加难点</h4>
+      <p>道路车辆安全围绕碰撞、制动、电池与电气功能安全展开；航空安全要求更严格的失效概率、冗余架构、持续适航与运行控制。分体构型还要额外论证"车-机耦合界面"：行驶振动对机构与机体的影响、车载充电对飞行电池的影响、地面工况与航空工况的叠加耐久。</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="matrix">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">08</div><h2>风险评估矩阵</h2><div class="en">Risk Assessment Matrix</div></div>
+    <p>风险 = 严重度（Severity）× 可能性（Likelihood）。下表为定性教学分级：绿色为可接受、黄色为 ALARP（需措施降至合理可行最低）、橙色为需强补偿与专项验证、红色为不可接受、必须消除或重新设计。单元格内为第 04–05 节辨识出的典型危险源；本报告不具备统计样本，可能性等级为工程定性判断，非频率统计值。</p>
+    <div class="matrix">
+      <div class="matrix-grid">
+        <div class="mh"></div>
+        <div class="mh">L1 罕见</div>
+        <div class="mh">L2 不太可能</div>
+        <div class="mh">L3 偶发</div>
+        <div class="mh">L4 较频繁</div>
+        <div class="mh">L5 频繁</div>
+
+        <div class="rh">S5 灾难：坠机 / 多人死亡</div>
+        <div class="cell c-r3">—</div>
+        <div class="cell c-r2">电池热失控；结构锁定失效</div>
+        <div class="cell c-r1">桨叶断裂 / 脱落</div>
+        <div class="cell c-r1">不可接受区</div>
+        <div class="cell c-r1">不可接受区</div>
+
+        <div class="rh">S4 严重：重伤 / 迫降</div>
+        <div class="cell c-r4">—</div>
+        <div class="cell c-r2">飞控失效；通信丢失</div>
+        <div class="cell c-r2">单电机 / 旋翼失效</div>
+        <div class="cell c-r1">不可接受区</div>
+        <div class="cell c-r1">不可接受区</div>
+
+        <div class="rh">S3 中等：轻伤 / 可控返航</div>
+        <div class="cell c-r4">—</div>
+        <div class="cell c-r3">人为误操作；对接错位</div>
+        <div class="cell c-r3">阵风 / 低能见度偏离</div>
+        <div class="cell c-r2">需专项管控</div>
+        <div class="cell c-r1">不可接受区</div>
+
+        <div class="rh">S2 轻微：无伤害 / 降级运行</div>
+        <div class="cell c-r4">传感器漂移降级</div>
+        <div class="cell c-r4">辅助功能受限</div>
+        <div class="cell c-r3">场地杂物 / 小故障</div>
+        <div class="cell c-r3">需监控</div>
+        <div class="cell c-r2">需专项管控</div>
+
+        <div class="rh">S1 可忽略：无安全影响</div>
+        <div class="cell c-r4">提示性告警</div>
+        <div class="cell c-r4">非关键功能降级</div>
+        <div class="cell c-r4">—</div>
+        <div class="cell c-r4">—</div>
+        <div class="cell c-r3">需监控</div>
+      </div>
+    </div>
+    <p class="note">表 2. 风险分级为定性演示。正式工程评审应由安全性工程师结合失效概率、暴露时长与避让可能性确定等级，并对红 / 橙区域逐项给出关闭措施与责任人。</p>
+  </div>
+</section>
+
+<section class="block" id="scenario">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">09</div><h2>关键运行场景安全分析</h2><div class="en">Scenario-Based Safety Analysis</div></div>
+    <p>同一套系统在不同任务剖面下面临的风险不同。下表按陆地航母典型使用链条逐段分析主要风险、安全要求与现有证据。场景判断基于公开披露的双座、约 130 km 航程、个人用户定位与尚未取证的产品状态。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:18%"><col style="width:25%"><col style="width:27%"><col style="width:18%"><col style="width:12%"></colgroup>
+        <thead><tr><th>场景</th><th>主要风险</th><th>必须满足的安全要求</th><th>现有公开证据</th><th>判定</th></tr></thead>
+        <tbody>
+          <tr><td>起飞爬升</td><td>功率需求峰值、抬升阶段失效、地面人员接近</td><td>剩余推力包线、隔离净空、爬升剖面与应急中止程序</td><td>公开载人飞行与多机试飞记录<sup><a href="#ref1">[1]</a></sup></td><td><span class="tag ok">已演示</span></td></tr>
+          <tr><td>悬停 / 低速机动</td><td>姿态扰动、阵风、发动机 / 电机波动</td><td>姿态控制稳定裕度、抗风边界、悬停失效处置</td><td>受控悬停与机动画面；抗风试验未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>航线巡航</td><td>续航边界、备降电量、空中相遇、设备失效</td><td>载荷-航程曲线、备降电量策略、航线与避让规则</td><td>航程 / 速度为媒体披露；包线与备降策略未公开<sup><a href="#ref6">[6]</a></sup></td><td><span class="tag warn">部分成立</span></td></tr>
+          <tr><td>降落 / 备降</td><td>场地判断失误、降落冲击、复飞决策</td><td>场地评估、视野辅助、复飞与应急着陆程序</td><td>降落辅助功能披露；备降场地体系未见</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>行驶 → 分离</td><td>车辆未停稳即释放、机构未解锁、人员进入动作区</td><td>驻车互锁、解锁序列、人员隔离、动作时序监控</td><td>约 5 分钟自动分合演示；互锁时序试验未公开<sup><a href="#ref12">[12]</a></sup></td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>结合 → 收纳</td><td>对接错位、锁止未确认、电气 / 通信未耦合</td><td>对位导向、锁止确认反馈、耦合状态监测、未锁止禁止行驶</td><td>机构与对接设计披露；状态确认逻辑未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>故障重构</td><td>单点 / 多点失效后推力与控制重构</td><td>故障检测、冗余切换、剩余控制包线与降级策略</td><td>冗余架构目标披露；故障注入与重构记录未公开</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>恶劣天气 / 低能见度</td><td>阵风、降水、结冰、视线受限导致失控</td><td>气象限制包线、能见度门槛、停飞条件与绕飞规则</td><td>噪声 / 气象实测数据未披露<sup><a href="#ref21">[21]</a></sup></td><td><span class="tag bad">未成立</span></td></tr>
+          <tr><td>地面人员接近</td><td>侵入旋翼 / 涵道区、桨叶或喷射流伤害</td><td>起降隔离区、围挡、警示、人员互锁与疏散路线</td><td>场地隔离为运行流程层面，未见标准方案</td><td><span class="tag warn">待验证</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure>
+      <img src="air-flight.jpg" alt="飞行体空中悬停试飞">
+      <figcaption><b>图 3.</b> 飞行体公开悬停试飞画面。悬停与低速机动可验证姿态控制与推进协调，但不能外推到抗风飞行、故障重构或满载航程。来源：公开新闻图片。</figcaption>
+    </figure>
+    <figure>
+      <img src="separation.jpg" alt="展会现场飞行体从陆行体后备舱分离结合">
+      <figcaption><b>图 4.</b> 分合状态现场演示。分离 / 结合界面是分体构型独有的安全风险段，需要机构锁止、互锁逻辑与场地隔离共同保证。来源：公开新闻图片。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="block" id="emergency">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">10</div><h2>应急处置与运行安全</h2><div class="en">Emergency and Operational Safety</div></div>
+    <div class="two-col">
+      <div class="card">
+        <h4>飞行应急</h4>
+        <ul>
+          <li><b>应急着陆</b>：明确可迫降区域、剩余电量门槛与弃机 / 保人决策规则</li>
+          <li><b>故障降级</b>：单系统失效后的姿态保持、返航或就近着陆程序</li>
+          <li><b>火情处置</b>：电池热失控识别、断电、隔离与机上 / 地面灭火方案</li>
+          <li><b>天气中止</b>：起飞前气象检查、空中绕飞与备降条件</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>场地与运行安全</h4>
+        <ul>
+          <li><b>起降隔离</b>：旋翼 / 涵道危险区围挡、人员准入与观众距离</li>
+          <li><b>地面消防</b>：充电与停放区消防器材、热蔓延隔离与应急通道</li>
+          <li><b>补能安全</b>：对接充电监测、过充保护、低温与异常报警</li>
+          <li><b>事故隔离</b>：残骸处置、事件报告、现场保护与复盘流程</li>
+        </ul>
+      </div>
+    </div>
+    <p>运行安全还包含人员资质、起降场地审批、保险与维护周转。没有服务网络与运行规程支撑的飞行汽车，即使单车性能很强，也只能作为受控活动设备存在；现阶段公开活动应以封闭场地、低频次、受控观众为前提，城市公共空间运行需要完整的运行许可与社区沟通<sup><a href="#ref7">[7]</a></sup>。</p>
+    <figure>
+      <img src="render-desert.jpg" alt="野外山地场景中的陆地航母概念渲染">
+      <figcaption><b>图 5.</b> 野外山地场景概念渲染。偏远起降点对场地评估、备降条件与应急着陆程序提出更高要求；该图为概念渲染，不代表实际运行航线。来源：企业概念渲染。</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="block" id="human">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">11</div><h2>人为因素与培训资质</h2><div class="en">Human Factors and Training</div></div>
+    <p>操纵简化不等于资质豁免。公开报道指出，购买者仍需取得相应飞行执照并完成培训<sup><a href="#ref18">[18]</a></sup>。安全设计需要把人作为系统的一环，而不是把所有异常都交给操作者临场处置。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:22%"><col style="width:39%"><col style="width:39%"></colgroup>
+        <thead><tr><th>人为因素风险</th><th>表现</th><th>设计 / 程序对策</th></tr></thead>
+        <tbody>
+          <tr><td>模式误解</td><td>分不清手动 / 自动状态，误判系统正在承担多少控制责任</td><td>清晰的模式指示、状态反馈、切换确认与模式边界提示</td></tr>
+          <tr><td>监控疏忽</td><td>自动飞行中注意力脱离，异常出现时反应滞后</td><td>监控职责设计、告警分级、操作员介入训练</td></tr>
+          <tr><td>误操纵</td><td>单杆操作下动作过量、时机错误</td><td>操纵增益限制、动作提示、模拟器训练与考核</td></tr>
+          <tr><td>应急处置错误</td><td>故障或突发天气下选择错误程序</td><td>标准化应急程序、情景化演练、决策辅助与降级指引</td></tr>
+          <tr><td>资质与疲劳</td><td>训练不足、疲劳或情绪影响判断</td><td>执照 / 体检要求、飞行时长记录、人员排班与健康管理</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="cyber">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">12</div><h2>网络与数据安全</h2><div class="en">Cyber and Data Security</div></div>
+    <p>飞行器与车辆都搭载高压电控、无线通信与软件控制系统，网络安全是功能安全之外的独立风险域。公开材料中尚未见陆地航母的网络安全架构、加密方案或渗透测试记录，以下为该类系统应覆盖的安全需求清单，作为后续核验方向。</p>
+    <div class="two-col">
+      <div class="card">
+        <h4>应覆盖的安全需求</h4>
+        <ul>
+          <li>外部接口认证与授权，防止非授权接入飞控 / 充电系统</li>
+          <li>固件 / 软件签名与更新完整性，防篡改与回滚保护</li>
+          <li>通信链路加密与入侵检测，防劫持与重放攻击</li>
+          <li>运行数据、位置与乘员信息的最小化采集与保护</li>
+          <li>安全事件响应、日志留存与漏洞披露机制</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>当前证据状态</h4>
+        <ul>
+          <li>未见公开网络安全需求文档或威胁分析</li>
+          <li>未见第三方渗透测试 / 安全认证记录</li>
+          <li>车载与机载系统的数据合规边界未说明</li>
+          <li>该项在正式安全案例中应作为独立论证章节</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="safetycase">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">13</div><h2>安全案例（Safety Case）骨架</h2><div class="en">Safety Case Argument Structure</div></div>
+    <p>安全案例是一份把"产品在规定边界内足够安全"论证清楚的结构化文件：顶层安全主张 → 分系统论证链 → 可追溯证据 → 残余风险与假设。下表按骨架列出本案例应有的论证位置与当前证据状态。</p>
+    <div class="table-scroll">
+      <table>
+        <colgroup><col style="width:22%"><col style="width:36%"><col style="width:26%"><col style="width:16%"></colgroup>
+        <thead><tr><th>论证层</th><th>安全主张</th><th>所需证据</th><th>当前状态</th></tr></thead>
+        <tbody>
+          <tr><td>顶层主张</td><td>在限定场地、气象与人员资质条件下，飞行体风险降至可接受水平</td><td>安全目标、运行边界与风险接受准则</td><td><span class="tag warn">未公开</span></td></tr>
+          <tr><td>推进与控制</td><td>单点失效后可保持可控并安全着陆</td><td>失效分析、冗余独立性、故障注入与重构包线记录</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>能源安全</td><td>电池与高压系统在故障工况下不发生不可控热失控</td><td>电池安全测试、热蔓延防护、过充过放与应急断电证据</td><td><span class="tag bad">证据不足</span></td></tr>
+          <tr><td>机构与结构</td><td>分合机构与折叠结构在全寿命周期内锁止可靠</td><td>寿命 / 振动 / 冲击试验、锁定确认与环境耐久记录</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>SOTIF</td><td>可预见的功能不足与误用已有场景化控制</td><td>场景库、误用分析、边界限制与验证结果</td><td><span class="tag warn">待验证</span></td></tr>
+          <tr><td>运行体系</td><td>场地、人员、应急与维护规程可支撑受控运行</td><td>运行手册、资质要求、应急程序、维护周转方案</td><td><span class="tag bad">未成立</span></td></tr>
+          <tr><td>残余风险</td><td>未关闭风险已识别、评估并告知相关方</td><td>残余风险清单、假设条件与跟踪闭环</td><td><span class="tag warn">未见公开</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="gaps">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">14</div><h2>证据缺口与未决问题</h2><div class="en">Evidence Gaps and Open Questions</div></div>
+    <p>第一，企业未公开完整飞行包线、质量预算、电池容量与能量密度、补能循环寿命、飞控架构与安全分析报告，本报告的安全判断只建立定性边界，不替代试验数据。第二，媒体报道在航程、速度、订单与交付时点上存在口径差异，安全结论不依赖这些宣传数值。第三，以下问题在公开材料中尚未得到回答，应作为后续安全跟踪重点：</p>
+    <ol class="findings">
+      <li><span class="idx">A</span><div>单 / 多电机、桨叶与飞控失效后的剩余推力包线与可着陆条件是什么？是否做过故障注入试验？</div></li>
+      <li><span class="idx">B</span><div>电池热失控防护、热蔓延隔离、过充过放与低温衰减的测试结果与循环寿命如何？</div></li>
+      <li><span class="idx">C</span><div>分合机构与折叠机臂的寿命次数、振动 / 冲击耐受与互锁逻辑验证记录是什么？</div></li>
+      <li><span class="idx">D</span><div>冗余通道的独立性等级、共因失效分析与软件研制保证等级如何确定？</div></li>
+      <li><span class="idx">E</span><div>允许运行的风速、能见度、温度与备降条件等气象包线边界是多少？</div></li>
+      <li><span class="idx">F</span><div>网络安全架构、数据合规与第三方安全审查是否完成？</div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" id="roadmap">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">15</div><h2>安全改进路线与 Go / No-Go 判据</h2><div class="en">Safety Roadmap and Go / No-Go Criteria</div></div>
+    <p>安全成熟度不应以宣传场次衡量，而应以可公开核验的证据门槛衡量；城市空中交通的成熟度是飞行器、交通管理、基础设施、运营与社区接受度共同成熟的体系<sup><a href="#ref24">[24]</a></sup>。建议把下一阶段安全闭环拆成四个门槛；任一门槛缺少可追溯证据，相应运行范围就不应放开。</p>
+    <div class="gates">
+      <div class="gate"><div class="g-no">GATE 1</div><h4>故障安全验证</h4><p>完成推进 / 控制 / 供电单点与多点失效试验，给出剩余控制包线与降级策略记录。</p></div>
+      <div class="gate"><div class="g-no">GATE 2</div><h4>能源与机构证据</h4><p>公开电池安全、热防护与分合 / 折叠机构寿命振动测试，明确维护间隔。</p></div>
+      <div class="gate"><div class="g-no">GATE 3</div><h4>适航与 SOTIF 闭环</h4><p>TC/PC/AC/OC 依次落地；完成 SOTIF 场景库、边界限制与人员资质要求论证。</p></div>
+      <div class="gate"><div class="g-no">GATE 4</div><h4>运行安全体系</h4><p>场地隔离、应急消防、维护周转、保险、网络安全与事件报告机制齐备后再扩大频次与地点。</p></div>
+    </div>
+    <p>合理的顺序是：先封闭场地、低频次、受控观众的体验飞行，再补全故障与电池证据，随后完成适航与运行体系，最后才谈城市公共空间运行。运营先行、网络后置，比直接宣称城市空中出行更符合现有安全证据。</p>
+  </div>
+</section>
+
+<section class="block refs" id="refs">
+  <div class="wrap">
+    <div class="sec-head"><div class="no">16</div><h2>参考文献</h2><div class="en">References</div></div>
+    <ul class="ref-list">
+      <li id="ref1"><span class="rn">1</span><span>小鹏汽车. 小鹏汇天"陆地航母"飞行汽车海外首秀，计划2026年量产交付[EB/OL]. 2025-01-08. <a href="https://www.xiaopeng.com/news/company_news/5438.html">https://www.xiaopeng.com/news/company_news/5438.html</a></span></li>
+      <li id="ref2"><span class="rn">2</span><span>小鹏汽车. 小鹏汇天"陆地航母"飞行汽车实车首次亮相广州，飞行首秀演绎未来应用场景[EB/OL]. 2024-09-04. <a href="https://www.xiaopeng.com/news/company_news/5361.html">https://www.xiaopeng.com/news/company_news/5361.html</a></span></li>
+      <li id="ref4"><span class="rn">4</span><span>小鹏汽车. 小鹏汇天"陆地航母"飞行体生产许可证（PC）申请获局方受理[EB/OL]. 2025-05-12. <a href="https://www.xiaopeng.com/news/company_news/5466.html">https://www.xiaopeng.com/news/company_news/5466.html</a></span></li>
+      <li id="ref5"><span class="rn">5</span><span>小鹏汽车. 小鹏分享物理AI涌现成果：发布第二代VLA、Robotaxi、全新一代IRON和飞行汽车（A868）[EB/OL]. 2025-11-17. <a href="https://www.xiaopeng.com/news/company_news/5511.html">https://www.xiaopeng.com/news/company_news/5511.html</a></span></li>
+      <li id="ref6"><span class="rn">6</span><span>China Daily Asia. Sky is the limit[EB/OL]. 2025-12-05. <a href="https://www.chinadailyasia.com/hk/article/624992">https://www.chinadailyasia.com/hk/article/624992</a></span></li>
+      <li id="ref7"><span class="rn">7</span><span>36氪. 飞行汽车的商业化实战，中国头部公司已经到哪一步了？[EB/OL]. 2026-10-21. <a href="https://36kr.com/p/4035366850204800">https://36kr.com/p/4035366850204800</a></span></li>
+      <li id="ref12"><span class="rn">12</span><span>南方+. 小鹏汇天赵德力：未来10年，飞行汽车将迎来高速发展[EB/OL]. 2026-11-11. <a href="https://www.nfnews.com/content/5385JrZ96B.html">https://www.nfnews.com/content/5385JrZ96B.html</a></span></li>
+      <li id="ref18"><span class="rn">18</span><span>New Atlas. 6-wheeled electric cyber van launches its own personal air taxi[EB/OL]. 2025-01-14. <a href="https://newatlas.com/automotive/xpeng-van-evtol-carrier-demo-launch">https://newatlas.com/automotive/xpeng-van-evtol-carrier-demo-launch</a></span></li>
+      <li id="ref19"><span class="rn">19</span><span>中国民用航空局航空器适航审定司. 动力提升航空器适航标准: AC-21-AA-2026-45[S/OL]. 2026-02-12. <a href="http://www.caac.gov.cn/XXGK/XXGK/GFXWJ/202602/P020260226344192407264.pdf">CAAC 咨询通告</a></span></li>
+      <li id="ref20"><span class="rn">20</span><span>ISO 26262:2018 Road vehicles — Functional safety; ISO 21448:2022 SOTIF; ISO 34502:2022 Test scenarios for automated driving systems[S]. Geneva: ISO.</span></li>
+      <li id="ref21"><span class="rn">21</span><span>MIRANDA J N, LEE S. Community Noise Impact of Urban Air Mobility Aircraft with Noise Propagation Effects[C]//AIAA AVIATION 2023 Forum. 2023. DOI:10.2514/6.2023-3364.</span></li>
+      <li id="ref22"><span class="rn">22</span><span>SAE International. ARP4754A Guidelines for Development of Civil Aircraft and Systems[S]. Warrendale: SAE, 2010.</span></li>
+      <li id="ref23"><span class="rn">23</span><span>SAE International. ARP4761 Guidelines and Methods for Conducting the Safety Assessment Process on Civil Airborne Systems and Equipment[S]. Warrendale: SAE, 1996.</span></li>
+      <li id="ref24"><span class="rn">24</span><span>GOODRICH K H, THEODORE C R. Description of the NASA Urban Air Mobility Maturity Level (UML) Scale[C]//AIAA Scitech 2021 Forum. 2021. DOI:10.2514/6.2021-1627.</span></li>
+      <li id="ref25"><span class="rn">25</span><span>PAN G, ALOUINI M-S. Flying Car Transportation System: Advances, Techniques, and Challenges[J]. IEEE Access, 2021, 9: 24586-24603. DOI:10.1109/ACCESS.2021.3056798.</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div>飞行汽车技术基础 · 作业二｜XPENG AEROHT Land Aircraft Carrier 全方位安全分析</div>
+    <div class="disc">免责声明：本页面为课程作业性质的安全案例分析，所有产品名称、商标归各自权利人所有；文中风险判断基于 2026-11-26 前公开材料并标注证据状态，不构成对产品安全性的背书、投资或购买建议。正式安全性评估应以试验报告、适航文件与第三方审查为准。</div>
+    <div class="disc">证据截止：2026-11-26 ｜ 作者：李国豪 / 15230818 ｜ 页面为自包含静态网页，可部署于 GitHub 公开仓库根目录。</div>
+  </div>
+</footer>
+
+</body>
+</html>
